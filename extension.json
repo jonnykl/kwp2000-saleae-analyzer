@@ -1,0 +1,13 @@
+{
+  "name": "KWP-2000",
+  "apiVersion": "1.0.0",
+  "author": "Jonathan Klamroth",
+  "version": "0.0.1",
+  "description": "",
+  "extensions": {
+    "KWP-2000": {
+      "type": "HighLevelAnalyzer",
+      "entryPoint": "KWP2000HLA.KWP2000HLA"
+    }
+  }
+}
