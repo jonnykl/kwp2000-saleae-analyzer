@@ -46,7 +46,10 @@ class KWP2000:
         0x3B: "writeDataByLocalIdentifier",
         0x3D: "writeMemoryByAddress",
         0x3E: "testerPresent",
-        0x80: "escCode"
+        0x80: "escCode",
+        0x81: "startCommunication",
+        0x82: "stopCommunication",
+        0x83: "accessTimingParameter"
     }
 
     @staticmethod
@@ -89,6 +92,9 @@ class KWP2000HLA(HighLevelAnalyzer):
         if self._skip > 0:
             self._skip -= 1
             return None
+        
+        if "error" in frame.data:
+            return None
 
         data = frame.data["data"][0]
         update_checksum = True
@@ -99,14 +105,17 @@ class KWP2000HLA(HighLevelAnalyzer):
             self._start_time = frame.start_time
             self._valid = False
 
-            if (data & 0x80) == 0:
+            if (data & 0xC0) == 0:
+                self._length = data & 0x3F
+                self._state = State.PARSE_LENGTH if self._length == 0 else State.PARSE_SERVICE_ID
+            elif (data & 0xC0) == 0x40:
                 self._state = State.PARSE_FORMAT
                 return AnalyzerFrame("KWP-2000 error", frame.start_time, frame.end_time, {
-                    "error": "invalid format"
+                    "error": "unsupported CARB format"
                 })
-
-            self._length = data & 0x7F
-            self._state = State.PARSE_DST_ADDR
+            else:
+                self._length = data & 0x3F
+                self._state = State.PARSE_DST_ADDR
         elif self._state == State.PARSE_DST_ADDR:
             self._dst_addr = data
             self._state = State.PARSE_SRC_ADDR
