@@ -92,7 +92,7 @@ class KWP2000HLA(HighLevelAnalyzer):
         if self._skip > 0:
             self._skip -= 1
             return None
-        
+
         if "error" in frame.data:
             return None
 
